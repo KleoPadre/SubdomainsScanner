@@ -4,7 +4,7 @@ import asyncio
 import aiodns
 from .dns import try_zone_transfer, find_subdomains
 from .cert import search_certificate_transparency
-from .utils import save_results
+from .utils import save_results, classify_subdomains
 
 logger = logging.getLogger(__name__)
 
@@ -162,3 +162,23 @@ class SubdomainScanner:
             return False
 
         return save_results(sorted(list(self.found_subdomains)), output_file)
+
+    def classify_subdomains(self, max_workers=10):
+        """
+        Классифицирует найденные поддомены на пользовательские и технические
+
+        Args:
+            max_workers (int): Количество параллельных потоков для проверки поддоменов
+
+        Returns:
+            tuple: Кортеж из двух списков (пользовательские, технические)
+        """
+        if not self.found_subdomains:
+            logger.warning("Нет поддоменов для классификации")
+            return [], []
+
+        logger.info(
+            f"Запуск классификации для {len(self.found_subdomains)} поддоменов..."
+        )
+        sorted_subdomains = sorted(list(self.found_subdomains))
+        return classify_subdomains(sorted_subdomains, max_workers)

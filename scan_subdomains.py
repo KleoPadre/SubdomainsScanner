@@ -32,6 +32,17 @@ def main():
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Включить подробный вывод"
     )
+    parser.add_argument(
+        "-c",
+        "--classify",
+        action="store_true",
+        help="Классифицировать поддомены на пользовательские и технические",
+    )
+    parser.add_argument(
+        "--save-classified",
+        action="store_true",
+        help="Сохранить классифицированные поддомены в отдельные файлы",
+    )
 
     args = parser.parse_args()
 
@@ -128,6 +139,57 @@ def main():
         scanner.save_results(args.output)
         print(f"\nРезультаты сохранены в файл: {args.output}")
         print(f"Примечание: поддомены со звездочками были отфильтрованы при сохранении")
+
+        # Классификация поддоменов, если указан соответствующий флаг
+        if args.classify:
+            print("\nКлассификация поддоменов...")
+            print("=" * 60)
+
+            # Классифицируем только обычные поддомены (без звездочек)
+            user_subdomains, technical_subdomains = scanner.classify_subdomains(
+                args.threads
+            )
+
+            print(f"\nРезультаты классификации:")
+            print(f"- Пользовательские поддомены: {len(user_subdomains)}")
+            print(f"- Технические поддомены: {len(technical_subdomains)}")
+
+            # Выводим примеры пользовательских поддоменов
+            if user_subdomains:
+                print("\nПримеры пользовательских поддоменов:")
+                for subdomain in user_subdomains[: min(10, len(user_subdomains))]:
+                    print(f"  - {subdomain}")
+                if len(user_subdomains) > 10:
+                    print(f"  ... и еще {len(user_subdomains) - 10}")
+
+            # Выводим примеры технических поддоменов
+            if technical_subdomains:
+                print("\nПримеры технических поддоменов:")
+                for subdomain in technical_subdomains[
+                    : min(10, len(technical_subdomains))
+                ]:
+                    print(f"  - {subdomain}")
+                if len(technical_subdomains) > 10:
+                    print(f"  ... и еще {len(technical_subdomains) - 10}")
+
+            # Сохраняем классифицированные поддомены в отдельные файлы, если указан флаг
+            if args.save_classified:
+                # Создаем базовое имя файла на основе выходного файла
+                base_output = os.path.splitext(args.output)[0]
+
+                # Сохраняем пользовательские поддомены
+                user_output = f"{base_output}_user.txt"
+                with open(user_output, "w") as f:
+                    for subdomain in sorted(user_subdomains):
+                        f.write(f"{subdomain}\n")
+                print(f"\nПользовательские поддомены сохранены в: {user_output}")
+
+                # Сохраняем технические поддомены
+                tech_output = f"{base_output}_technical.txt"
+                with open(tech_output, "w") as f:
+                    for subdomain in sorted(technical_subdomains):
+                        f.write(f"{subdomain}\n")
+                print(f"Технические поддомены сохранены в: {tech_output}")
     else:
         print(f"Поддомены для {args.domain} не найдены.")
 

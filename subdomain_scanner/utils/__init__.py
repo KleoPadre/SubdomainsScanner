@@ -4,3 +4,4 @@
 
 from .file_handler import ensure_wordlist_exists, save_results
 from .logger import setup_logger
+from .classifier import classify_subdomains
