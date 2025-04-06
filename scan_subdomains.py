@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+import argparse
+import logging
+import os
+import sys
+from datetime import datetime
+from subdomain_scanner.utils import setup_logger, ensure_wordlist_exists
+from subdomain_scanner.scanner import SubdomainScanner
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Сканер поддоменов - инструмент для обнаружения поддоменов"
+    )
+    parser.add_argument(
+        "domain", nargs="?", help="Домен для сканирования (например, example.com)"
+    )
+    parser.add_argument(
+        "-w",
+        "--wordlist",
+        help="Путь к файлу словаря для перебора поддоменов",
+        default="wordlists/subdomains-top1million-5000.txt",
+    )
+    parser.add_argument(
+        "-t",
+        "--threads",
+        help="Количество потоков для параллельного поиска",
+        type=int,
+        default=10,
+    )
+    parser.add_argument("-o", "--output", help="Файл для сохранения результатов")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Включить подробный вывод"
+    )
+
+    args = parser.parse_args()
+
+    # Настраиваем логирование
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    setup_logger(log_level=log_level)
+
+    # Проверяем наличие домена
+    if not args.domain:
+        # Запрашиваем адрес домена у пользователя
+        args.domain = input(
+            "Введите домен для сканирования (например, example.com): "
+        ).strip()
+        if not args.domain:
+            logging.error("Домен не указан. Завершение работы.")
+            sys.exit(1)
+
+    # Проверяем формат домена
+    if "://" in args.domain:
+        # Если пользователь ввел URL, извлекаем домен
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(args.domain)
+            args.domain = parsed.netloc or parsed.path
+        except Exception as e:
+            logging.error(f"Не удалось разобрать URL: {e}")
+
+    # Удаляем 'www.' если есть
+    if args.domain.startswith("www."):
+        args.domain = args.domain[4:]
+
+    # Убираем слеш в конце, если есть
+    args.domain = args.domain.rstrip("/")
+
+    # Проверяем наличие словаря или скачиваем его
+    wordlist_url = "https://github.com/danielmiessler/SecLists/raw/master/Discovery/DNS/subdomains-top1million-5000.txt"
+    if not os.path.exists(args.wordlist):
+        ensure_wordlist_exists(args.wordlist, wordlist_url)
+
+    # Если выходной файл не указан, создаем его с датой и временем
+    if not args.output:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        args.output = f"results_{args.domain.replace('.', '_')}_{timestamp}.txt"
+
+    # Запускаем сканирование
+    scanner = SubdomainScanner(args.domain, args.wordlist, args.threads)
+
+    print(f"\nНачинаем сканирование поддоменов для: {args.domain}")
+    print("=" * 60)
+    print("Используемые методы:")
+    print("- DNS Zone Transfer")
+    print("- Certificate Transparency Logs")
+    print("- Перебор из словаря")
+    print("=" * 60)
+
+    found_subdomains = scanner.scan_all()
+
+    # Вывод результатов
+    print("\nРезультаты сканирования:")
+    print("=" * 60)
+
+    if found_subdomains:
+        print(f"Найдено {len(found_subdomains)} поддоменов:")
+        for subdomain in found_subdomains:
+            print(subdomain)
+
+        # Сохранение в файл
+        scanner.save_results(args.output)
+        print(f"\nРезультаты сохранены в файл: {args.output}")
+    else:
+        print(f"Поддомены для {args.domain} не найдены.")
+
+    print("\nСканирование завершено.")
+
+
+if __name__ == "__main__":
+    main()
