@@ -1,8 +1,37 @@
 import requests
 import logging
 import time
+import dns.resolver
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
+
+# Импортируем список публичных DNS-серверов
+from ..dns.zone_transfer import PUBLIC_DNS_SERVERS
 
 logger = logging.getLogger(__name__)
+
+
+def verify_subdomain(subdomain):
+    """Проверяет существование поддомена с помощью DNS-запроса"""
+    # Используем кастомный резолвер с публичными DNS-серверами
+    resolver = dns.resolver.Resolver()
+    resolver.nameservers = PUBLIC_DNS_SERVERS
+    resolver.timeout = 1.0
+    resolver.lifetime = 2.0
+
+    try:
+        resolver.resolve(subdomain, "A")
+        return True
+    except:
+        try:
+            resolver.resolve(subdomain, "CNAME")
+            return True
+        except:
+            try:
+                resolver.resolve(subdomain, "MX")
+                return True
+            except:
+                return False
 
 
 def search_certificate_transparency(domain):
@@ -55,4 +84,35 @@ def search_certificate_transparency(domain):
     except Exception as e:
         logger.debug(f"Ошибка при поиске через CertSpotter: {e}")
 
-    return list(found_subdomains)
+    # Проверяем найденные поддомены через DNS
+    logger.info(f"Проверка {len(found_subdomains)} найденных поддоменов через DNS...")
+
+    subdomains_list = list(found_subdomains)
+    verified_subdomains = []
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Запускаем проверку в параллельных потоках
+        futures = {
+            executor.submit(verify_subdomain, subdomain): subdomain
+            for subdomain in subdomains_list
+        }
+
+        # Отображаем прогресс
+        with tqdm(
+            total=len(subdomains_list), desc="Проверка поддоменов через DNS"
+        ) as pbar:
+            for future in as_completed(futures):
+                subdomain = futures[future]
+                try:
+                    is_valid = future.result()
+                    if is_valid:
+                        verified_subdomains.append(subdomain)
+                except Exception as e:
+                    logger.debug(f"Ошибка при проверке {subdomain}: {e}")
+                pbar.update(1)
+
+    logger.info(
+        f"Подтверждено {len(verified_subdomains)} поддоменов из {len(found_subdomains)}"
+    )
+
+    return verified_subdomains

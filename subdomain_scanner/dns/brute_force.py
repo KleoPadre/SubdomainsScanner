@@ -5,15 +5,43 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
+# Импортируем список публичных DNS-серверов
+from .zone_transfer import PUBLIC_DNS_SERVERS
+
 
 def check_subdomain(subdomain, domain):
     """Проверяет существование поддомена с помощью DNS-запроса"""
     full_domain = f"{subdomain}.{domain}"
+
+    # Используем кастомный резолвер с публичными DNS-серверами
+    resolver = dns.resolver.Resolver()
+    resolver.nameservers = PUBLIC_DNS_SERVERS
+    resolver.timeout = 1.0  # Короткий таймаут для одного запроса
+    resolver.lifetime = 2.0  # Общее время жизни запроса
+
     try:
-        dns.resolver.resolve(full_domain, "A")
+        resolver.resolve(full_domain, "A")
         return full_domain
-    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoNameservers):
+    except dns.resolver.NXDOMAIN:
+        # Домен точно не существует
         return None
+    except dns.resolver.NoAnswer:
+        # Нет A-записи, но попробуем другие типы записей
+        try:
+            resolver.resolve(full_domain, "CNAME")
+            return full_domain
+        except:
+            return None
+    except dns.exception.Timeout:
+        # При таймауте повторяем запрос с другим сервером
+        try:
+            # Берем другие DNS-серверы
+            backup_servers = PUBLIC_DNS_SERVERS[2:] + PUBLIC_DNS_SERVERS[:2]
+            resolver.nameservers = backup_servers
+            resolver.resolve(full_domain, "A")
+            return full_domain
+        except:
+            return None
     except Exception as e:
         logger.debug(f"Ошибка при проверке {full_domain}: {e}")
         return None
@@ -44,6 +72,9 @@ def find_subdomains(
     logger.info(
         f"Поиск поддоменов для {domain} с использованием {len(wordlist)} возможных имен..."
     )
+    logger.info(
+        f"Используем публичные DNS-серверы: {', '.join(PUBLIC_DNS_SERVERS[:3])}..."
+    )
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         future_to_subdomain = {
@@ -57,4 +88,5 @@ def find_subdomains(
                     found_subdomains.append(result)
                 pbar.update(1)
 
+    logger.info(f"Найдено {len(found_subdomains)} поддоменов методом брутфорса")
     return found_subdomains
