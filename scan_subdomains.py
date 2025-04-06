@@ -43,6 +43,12 @@ def main():
         action="store_true",
         help="Сохранить классифицированные поддомены в отдельные файлы",
     )
+    parser.add_argument(
+        "--max-classify",
+        type=int,
+        default=100,
+        help="Максимальное количество поддоменов для классификации (0 = без ограничений)",
+    )
 
     args = parser.parse_args()
 
@@ -146,8 +152,22 @@ def main():
             print("=" * 60)
 
             # Классифицируем только обычные поддомены (без звездочек)
+            # При необходимости ограничиваем количество поддоменов для классификации
+            subdomains_to_classify = regular_subdomains
+            if (
+                args.max_classify > 0
+                and len(subdomains_to_classify) > args.max_classify
+            ):
+                print(
+                    f"\nВНИМАНИЕ: Ограничение классификации до {args.max_classify} из {len(subdomains_to_classify)} поддоменов"
+                )
+                print(
+                    f"Для классификации всех поддоменов используйте: --max-classify 0"
+                )
+                subdomains_to_classify = subdomains_to_classify[: args.max_classify]
+
             user_subdomains, technical_subdomains = scanner.classify_subdomains(
-                args.threads
+                args.threads, subdomains_to_classify
             )
 
             print(f"\nРезультаты классификации:")

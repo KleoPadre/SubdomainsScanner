@@ -163,22 +163,27 @@ class SubdomainScanner:
 
         return save_results(sorted(list(self.found_subdomains)), output_file)
 
-    def classify_subdomains(self, max_workers=10):
+    def classify_subdomains(self, max_workers=10, subdomains_list=None):
         """
         Классифицирует найденные поддомены на пользовательские и технические
 
         Args:
             max_workers (int): Количество параллельных потоков для проверки поддоменов
+            subdomains_list (list, optional): Список поддоменов для классификации.
+                                              По умолчанию None (используются найденные поддомены)
 
         Returns:
             tuple: Кортеж из двух списков (пользовательские, технические)
         """
-        if not self.found_subdomains:
-            logger.warning("Нет поддоменов для классификации")
-            return [], []
+        if subdomains_list is None:
+            if not self.found_subdomains:
+                logger.warning("Нет поддоменов для классификации")
+                return [], []
+            subdomains_list = sorted(list(self.found_subdomains))
+        else:
+            if not subdomains_list:
+                logger.warning("Передан пустой список поддоменов для классификации")
+                return [], []
 
-        logger.info(
-            f"Запуск классификации для {len(self.found_subdomains)} поддоменов..."
-        )
-        sorted_subdomains = sorted(list(self.found_subdomains))
-        return classify_subdomains(sorted_subdomains, max_workers)
+        logger.info(f"Запуск классификации для {len(subdomains_list)} поддоменов...")
+        return classify_subdomains(subdomains_list, max_workers)
