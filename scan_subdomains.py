@@ -72,10 +72,16 @@ def main():
     if not os.path.exists(args.wordlist):
         ensure_wordlist_exists(args.wordlist, wordlist_url)
 
-    # Если выходной файл не указан, создаем его с датой и временем
+    # Если выходной файл не указан, создаем его в папке finds с именем домена
     if not args.output:
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        args.output = f"results_{args.domain.replace('.', '_')}_{timestamp}.txt"
+        # Проверяем наличие директории finds, если нет - создаем
+        finds_dir = "finds"
+        if not os.path.exists(finds_dir):
+            os.makedirs(finds_dir)
+
+        # Формируем имя файла на основе домена
+        domain_file_name = args.domain.replace(".", "_")
+        args.output = f"{finds_dir}/{domain_file_name}.txt"
 
     # Запускаем сканирование
     scanner = SubdomainScanner(args.domain, args.wordlist, args.threads)
