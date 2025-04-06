@@ -20,19 +20,19 @@ pip install -r requirements.txt
 
 ```bash
 # Базовое использование
-python scan_subdomains.py example.com
+python3 scan_subdomains.py example.com
 
 # С указанием своего словаря
-python scan_subdomains.py example.com -w wordlist.txt
+python3 scan_subdomains.py example.com -w wordlist.txt
 
 # С указанием количества потоков
-python scan_subdomains.py example.com -t 20
+python3 scan_subdomains.py example.com -t 20
 
 # С сохранением результатов в другой файл (по умолчанию сохраняется в папку finds)
-python scan_subdomains.py example.com -o results.txt
+python3 scan_subdomains.py example.com -o results.txt
 
 # С подробным выводом
-python scan_subdomains.py example.com -v
+python3 scan_subdomains.py example.com -v
 
 # С классификацией поддоменов на пользовательские и технические
 python3 scan_subdomains.py example.com -c
@@ -59,7 +59,7 @@ python3 scan_subdomains.py example.com --filter static.xx
 Если запустить скрипт без указания домена, он запросит его ввод интерактивно:
 
 ```bash
-python scan_subdomains.py
+python3 scan_subdomains.py
 ```
 
 ## Структура проекта
@@ -97,7 +97,7 @@ python scan_subdomains.py
 
 Для сохранения всех найденных поддоменов, включая поддомены со звездочками:
 ```bash
-python scan_subdomains.py example.com --no-filter-wildcards
+python3 scan_subdomains.py example.com --no-filter-wildcards
 ```
 
 Результат: все найденные поддомены, включая поддомены со звездочками, будут сохранены в выходной файл.
@@ -106,7 +106,7 @@ python scan_subdomains.py example.com --no-filter-wildcards
 
 Для сохранения всех обычных поддоменов (без звездочек) в один файл без классификации:
 ```bash
-python scan_subdomains.py example.com --all-in-one
+python3 scan_subdomains.py example.com --all-in-one
 ```
 
 Результат: все поддомены, кроме тех, что начинаются со звездочки, будут сохранены в один файл без разделения на пользовательские и технические.
@@ -115,7 +115,7 @@ python scan_subdomains.py example.com --all-in-one
 
 Для поиска конкретных поддоменов, содержащих указанную строку:
 ```bash
-python scan_subdomains.py example.com --filter static.xx
+python3 scan_subdomains.py example.com --filter static.xx
 ```
 
 Результат: в консоли будут отображены только поддомены, содержащие указанную строку (в данном примере "static.xx").
@@ -147,22 +147,22 @@ python scan_subdomains.py example.com --filter static.xx
 
 Базовая классификация (до 100 поддоменов):
 ```bash
-python scan_subdomains.py example.com -c
+python3 scan_subdomains.py example.com -c
 ```
 
 Классификация с сохранением результатов в отдельные файлы:
 ```bash
-python scan_subdomains.py example.com -c --save-classified
+python3 scan_subdomains.py example.com -c --save-classified
 ```
 
 Классификация ограниченного числа поддоменов (для быстрого анализа):
 ```bash
-python scan_subdomains.py example.com -c --max-classify 20
+python3 scan_subdomains.py example.com -c --max-classify 20
 ```
 
 Классификация всех найденных поддоменов (может занять много времени):
 ```bash
-python scan_subdomains.py example.com -c --max-classify 0
+python3 scan_subdomains.py example.com -c --max-classify 0
 ```
 
 ### Методы классификации
