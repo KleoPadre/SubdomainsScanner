@@ -9,8 +9,8 @@
 
 ```bash
 # Клонирование репозитория
-git clone https://github.com/username/subdomain-scanner.git
-cd subdomain-scanner
+git clone https://github.com/KleoPadre/SubdomainsScanner.git
+cd SubdomainsScanner
 
 # Установка зависимостей
 pip install -r requirements.txt
@@ -28,7 +28,7 @@ python scan_subdomains.py example.com -w wordlist.txt
 # С указанием количества потоков
 python scan_subdomains.py example.com -t 20
 
-# С сохранением результатов в файл
+# С сохранением результатов в другой файл (по умолчанию сохраняется в папку finds)
 python scan_subdomains.py example.com -o results.txt
 
 # С подробным выводом
@@ -53,6 +53,14 @@ python scan_subdomains.py
   - `utils/` - Вспомогательные модули
     - `file_handler.py` - Работа с файлами
     - `logger.py` - Настройка логирования
+- `finds/` - Папка для сохранения результатов сканирования
+- `wordlists/` - Папка с файлами словарей для перебора поддоменов
+
+## Сохранение результатов
+
+По умолчанию, найденные поддомены сохраняются в файл в папке `finds/` с именем, соответствующим сканируемому домену:
+- Например, при сканировании `example.com` результаты будут сохранены в `finds/example_com.txt`
+- Вы можете указать свой путь для сохранения с помощью параметра `-o`
 
 ## Зависимости
 
