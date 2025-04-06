@@ -49,6 +49,10 @@ def main():
         default=100,
         help="Максимальное количество поддоменов для классификации (0 = без ограничений)",
     )
+    parser.add_argument(
+        "--filter",
+        help="Фильтр для вывода только поддоменов, содержащих указанную строку",
+    )
 
     args = parser.parse_args()
 
@@ -114,7 +118,7 @@ def main():
     found_subdomains = scanner.scan_all()
 
     # Вывод результатов
-    print("\nРезультаты сканирования:")
+    print(f"\nРезультаты сканирования:")
     print("=" * 60)
 
     if found_subdomains:
@@ -130,15 +134,29 @@ def main():
 
         # Ограничиваем вывод, чтобы терминал не был переполнен
         max_display = 20
-        display_count = min(len(found_subdomains), max_display)
 
-        print(
-            f"\nПримеры найденных поддоменов (показано {display_count} из {len(found_subdomains)}):"
-        )
-        for subdomain in found_subdomains[:display_count]:
+        # Если указан фильтр, применяем его
+        display_subdomains = found_subdomains
+        if args.filter:
+            filtered_subdomains = [
+                s for s in found_subdomains if args.filter.lower() in s.lower()
+            ]
+            print(
+                f"\nПрименен фильтр '{args.filter}': найдено {len(filtered_subdomains)} поддоменов"
+            )
+            display_subdomains = filtered_subdomains
+        else:
+            display_count = min(len(found_subdomains), max_display)
+            print(
+                f"\nПримеры найденных поддоменов (показано {display_count} из {len(found_subdomains)}):"
+            )
+            display_subdomains = found_subdomains[:display_count]
+
+        # Выводим поддомены
+        for subdomain in display_subdomains:
             print(subdomain)
 
-        if len(found_subdomains) > max_display:
+        if len(found_subdomains) > max_display and not args.filter:
             print(f"... и еще {len(found_subdomains) - max_display} поддоменов")
 
         # Сохранение в файл

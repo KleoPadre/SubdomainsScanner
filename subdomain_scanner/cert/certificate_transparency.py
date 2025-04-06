@@ -4,6 +4,7 @@ import time
 import dns.resolver
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
+import re
 
 # Импортируем список публичных DNS-серверов
 from ..dns.zone_transfer import PUBLIC_DNS_SERVERS
@@ -83,6 +84,35 @@ def search_certificate_transparency(domain):
             )
     except Exception as e:
         logger.debug(f"Ошибка при поиске через CertSpotter: {e}")
+
+    # Метод 4: Facebook Certificate Transparency API для лучшего поиска fbcdn.net и facebook.com поддоменов
+    if "facebook.com" in domain or "fbcdn.net" in domain:
+        try:
+            logger.info(f"Используем специальный источник для {domain}...")
+            response = requests.get(
+                f"https://developers.facebook.com/tools/ct/search?q=%.{domain}",
+                timeout=10,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+                },
+            )
+            if response.status_code == 200:
+                # Парсим результаты из HTML (упрощенно)
+                domain_pattern = domain.replace(".", "\\.")
+                pattern = r"([a-zA-Z0-9.-]+\." + domain_pattern + r")"
+                matches = re.findall(pattern, response.text)
+                for match in matches:
+                    if match.endswith(domain) and match != domain:
+                        found_subdomains.add(match)
+                logger.info(
+                    f"Найдено {len(found_subdomains)} поддоменов через Facebook CT API"
+                )
+            else:
+                logger.debug(
+                    f"Ошибка при запросе к Facebook CT API: статус {response.status_code}"
+                )
+        except Exception as e:
+            logger.debug(f"Ошибка при поиске через Facebook CT API: {e}")
 
     # Проверяем найденные поддомены через DNS
     logger.info(f"Проверка {len(found_subdomains)} найденных поддоменов через DNS...")

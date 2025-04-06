@@ -33,6 +33,8 @@ TECHNICAL_PATTERNS = [
     r"^[a-z0-9]+\.xz\.",
     r"^[a-z0-9]+\.fbcdn\.",
     r"^scontent-[a-z]+[0-9]-[0-9]+\.",
+    r"^static\.xx\.",
+    r"^scontent-[a-z]+[0-9]-[0-9]+\.xx\.",  # Для шаблонов типа scontent-lhr8-2.xx.fbcdn.net
     r"^[a-z][0-9]?\.ak\.",
     r"^[a-z]?[0-9]{1,3}\.",
     r"^star[0-9]*\.",

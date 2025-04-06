@@ -69,6 +69,57 @@ def find_subdomains(
         logger.error(f"Не удалось загрузить словарь из {wordlist_file}")
         return found_subdomains
 
+    # Добавляем специальные префиксы для Facebook и fbcdn.net
+    if "facebook.com" in domain or "fbcdn.net" in domain:
+        logger.info(f"Добавляем специальные префиксы для {domain}...")
+        fb_prefixes = [
+            "static",
+            "static.xx",
+            "scontent",
+            "scontent-lhr8-1",
+            "scontent-lhr8-2",
+            "scontent-fra5-1",
+            "scontent-iad3-1",
+            "scontent-atl3-1",
+            "scontent-dfw5-1",
+            "scontent-lga3-1",
+            "scontent-lax3-1",
+            "scontent-sin6-1",
+            "scontent-syd2-1",
+            "scontent-nrt1-1",
+            "scontent-hkg4-1",
+            "scontent-gmp1-1",
+            "video",
+            "video-lhr8-1",
+        ]
+
+        # Добавляем все варианты городов и индексов для scontent
+        for city in [
+            "lhr",
+            "fra",
+            "iad",
+            "atl",
+            "dfw",
+            "lga",
+            "lax",
+            "sin",
+            "syd",
+            "nrt",
+            "hkg",
+            "gmp",
+        ]:
+            for idx in range(1, 10):
+                for subidx in range(1, 4):
+                    fb_prefixes.append(f"scontent-{city}{idx}-{subidx}")
+                    fb_prefixes.append(f"scontent-{city}{idx}-{subidx}.xx")
+
+        # Добавляем префиксы в словарь, если их там нет
+        for prefix in fb_prefixes:
+            if prefix not in wordlist:
+                wordlist.append(prefix)
+
+        logger.info(f"Добавлено {len(fb_prefixes)} специальных префиксов для {domain}")
+
     logger.info(
         f"Поиск поддоменов для {domain} с использованием {len(wordlist)} возможных имен..."
     )
