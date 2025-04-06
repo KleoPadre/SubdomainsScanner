@@ -58,6 +58,11 @@ def main():
         action="store_true",
         help="Не фильтровать поддомены со звездочками при сохранении",
     )
+    parser.add_argument(
+        "--all-in-one",
+        action="store_true",
+        help="Сохранить все поддомены в один файл без классификации и без звездочек",
+    )
 
     args = parser.parse_args()
 
@@ -174,8 +179,8 @@ def main():
                 f"Примечание: поддомены со звездочками были отфильтрованы при сохранении"
             )
 
-        # Классификация поддоменов, если указан соответствующий флаг
-        if args.classify:
+        # Классификация поддоменов, если указан соответствующий флаг и не указан флаг all-in-one
+        if args.classify and not args.all_in_one:
             print("\nКлассификация поддоменов...")
             print("=" * 60)
 
@@ -238,6 +243,10 @@ def main():
                     for subdomain in sorted(technical_subdomains):
                         f.write(f"{subdomain}\n")
                 print(f"Технические поддомены сохранены в: {tech_output}")
+        elif args.all_in_one:
+            print(
+                "\nПоддомены сохранены в один файл без классификации и без звездочек."
+            )
     else:
         print(f"Поддомены для {args.domain} не найдены.")
 
