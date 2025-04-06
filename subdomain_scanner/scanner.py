@@ -150,7 +150,7 @@ class SubdomainScanner:
         )
         return sorted(list(self.found_subdomains))
 
-    def save_results(self, output_file):
+    def save_results(self, output_file, no_filter_wildcards=False):
         """Сохраняет результаты в файл"""
         if not self.found_subdomains:
             logger.warning("Нет данных для сохранения")
@@ -161,7 +161,9 @@ class SubdomainScanner:
             logger.error("Не указан путь для сохранения результатов")
             return False
 
-        return save_results(sorted(list(self.found_subdomains)), output_file)
+        return save_results(
+            sorted(list(self.found_subdomains)), output_file, no_filter_wildcards
+        )
 
     def classify_subdomains(self, max_workers=10, subdomains_list=None):
         """

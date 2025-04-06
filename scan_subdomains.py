@@ -53,6 +53,11 @@ def main():
         "--filter",
         help="Фильтр для вывода только поддоменов, содержащих указанную строку",
     )
+    parser.add_argument(
+        "--no-filter-wildcards",
+        action="store_true",
+        help="Не фильтровать поддомены со звездочками при сохранении",
+    )
 
     args = parser.parse_args()
 
@@ -160,9 +165,14 @@ def main():
             print(f"... и еще {len(found_subdomains) - max_display} поддоменов")
 
         # Сохранение в файл
-        scanner.save_results(args.output)
+        scanner.save_results(args.output, args.no_filter_wildcards)
         print(f"\nРезультаты сохранены в файл: {args.output}")
-        print(f"Примечание: поддомены со звездочками были отфильтрованы при сохранении")
+        if args.no_filter_wildcards:
+            print(f"Сохранены все поддомены, включая поддомены со звездочками")
+        else:
+            print(
+                f"Примечание: поддомены со звездочками были отфильтрованы при сохранении"
+            )
 
         # Классификация поддоменов, если указан соответствующий флаг
         if args.classify:

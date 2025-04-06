@@ -35,26 +35,37 @@ def ensure_wordlist_exists(wordlist_path, download_url=None):
     return False
 
 
-def save_results(subdomains, output_file):
+def save_results(subdomains, output_file, no_filter_wildcards=False):
     """
-    Сохраняет результаты в файл, исключая поддомены со звездочками
+    Сохраняет результаты в файл, исключая поддомены со звездочками (если no_filter_wildcards=False)
+
+    Args:
+        subdomains (list): Список поддоменов для сохранения
+        output_file (str): Путь к файлу для сохранения
+        no_filter_wildcards (bool): Если True, то поддомены со звездочками не будут отфильтрованы
     """
     try:
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        # Фильтруем поддомены, начинающиеся со звездочки
-        filtered_subdomains = [
-            subdomain for subdomain in subdomains if not subdomain.startswith("*")
-        ]
+        # Фильтруем поддомены, начинающиеся со звездочки, если не указан флаг no_filter_wildcards
+        if no_filter_wildcards:
+            filtered_subdomains = subdomains
+        else:
+            filtered_subdomains = [
+                subdomain for subdomain in subdomains if not subdomain.startswith("*")
+            ]
 
         with open(output_file, "w") as f:
             for subdomain in filtered_subdomains:
                 f.write(f"{subdomain}\n")
 
         logger.info(f"Результаты сохранены в файл: {output_file}")
-        logger.info(
-            f"Всего поддоменов: {len(subdomains)}, после фильтрации: {len(filtered_subdomains)}"
-        )
+        if no_filter_wildcards:
+            logger.info(f"Всего поддоменов: {len(subdomains)}")
+        else:
+            logger.info(
+                f"Всего поддоменов: {len(subdomains)}, после фильтрации: {len(filtered_subdomains)}"
+            )
         return True
     except Exception as e:
         logger.error(f"Ошибка при сохранении результатов: {e}")
