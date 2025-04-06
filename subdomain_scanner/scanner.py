@@ -111,15 +111,36 @@ class SubdomainScanner:
     def scan_all(self):
         """Запускает все методы сканирования"""
         logger.info(f"Запуск полного сканирования поддоменов для {self.domain}")
+        total_methods = 3
+        successful_methods = 0
 
         # Метод 1: Zone Transfer
-        self.scan_zone_transfer()
+        try:
+            self.scan_zone_transfer()
+            successful_methods += 1
+        except Exception as e:
+            logger.error(f"Ошибка при сканировании через Zone Transfer: {e}")
+            logger.info("Продолжаем сканирование другими методами...")
 
         # Метод 2: Сертификаты
-        self.scan_certificate_transparency()
+        try:
+            self.scan_certificate_transparency()
+            successful_methods += 1
+        except Exception as e:
+            logger.error(f"Ошибка при сканировании через Certificate Transparency: {e}")
+            logger.info("Продолжаем сканирование другими методами...")
 
         # Метод 3: Перебор
-        self.scan_brute_force()
+        try:
+            self.scan_brute_force()
+            successful_methods += 1
+        except Exception as e:
+            logger.error(f"Ошибка при сканировании методом перебора: {e}")
+
+        # Статистика по методам сканирования
+        logger.info(
+            f"Выполнено {successful_methods} из {total_methods} методов сканирования"
+        )
 
         # Дополнительная проверка (опционально)
         # asyncio.run(self.verify_subdomains())
