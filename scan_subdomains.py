@@ -101,13 +101,33 @@ def main():
     print("=" * 60)
 
     if found_subdomains:
+        # Считаем поддомены со звездочками и без
+        wildcard_subdomains = [s for s in found_subdomains if s.startswith("*")]
+        regular_subdomains = [s for s in found_subdomains if not s.startswith("*")]
+
         print(f"Найдено {len(found_subdomains)} поддоменов:")
-        for subdomain in found_subdomains:
+        print(f"- Обычные поддомены: {len(regular_subdomains)}")
+        print(
+            f"- Поддомены со звездочками (будут отфильтрованы): {len(wildcard_subdomains)}"
+        )
+
+        # Ограничиваем вывод, чтобы терминал не был переполнен
+        max_display = 20
+        display_count = min(len(found_subdomains), max_display)
+
+        print(
+            f"\nПримеры найденных поддоменов (показано {display_count} из {len(found_subdomains)}):"
+        )
+        for subdomain in found_subdomains[:display_count]:
             print(subdomain)
+
+        if len(found_subdomains) > max_display:
+            print(f"... и еще {len(found_subdomains) - max_display} поддоменов")
 
         # Сохранение в файл
         scanner.save_results(args.output)
         print(f"\nРезультаты сохранены в файл: {args.output}")
+        print(f"Примечание: поддомены со звездочками были отфильтрованы при сохранении")
     else:
         print(f"Поддомены для {args.domain} не найдены.")
 

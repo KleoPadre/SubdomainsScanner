@@ -37,14 +37,24 @@ def ensure_wordlist_exists(wordlist_path, download_url=None):
 
 def save_results(subdomains, output_file):
     """
-    Сохраняет результаты в файл
+    Сохраняет результаты в файл, исключая поддомены со звездочками
     """
     try:
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+        # Фильтруем поддомены, начинающиеся со звездочки
+        filtered_subdomains = [
+            subdomain for subdomain in subdomains if not subdomain.startswith("*")
+        ]
+
         with open(output_file, "w") as f:
-            for subdomain in subdomains:
+            for subdomain in filtered_subdomains:
                 f.write(f"{subdomain}\n")
+
         logger.info(f"Результаты сохранены в файл: {output_file}")
+        logger.info(
+            f"Всего поддоменов: {len(subdomains)}, после фильтрации: {len(filtered_subdomains)}"
+        )
         return True
     except Exception as e:
         logger.error(f"Ошибка при сохранении результатов: {e}")
