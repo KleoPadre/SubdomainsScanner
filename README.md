@@ -35,16 +35,16 @@ python scan_subdomains.py example.com -o results.txt
 python scan_subdomains.py example.com -v
 
 # С классификацией поддоменов на пользовательские и технические
-python scan_subdomains.py example.com -c
+python3 scan_subdomains.py example.com -c
 
 # С сохранением классифицированных поддоменов в отдельные файлы
-python scan_subdomains.py example.com -c --save-classified
+python3 scan_subdomains.py example.com -c --save-classified
 
 # С ограничением количества поддоменов для классификации
-python scan_subdomains.py example.com -c --max-classify 50
+python3 scan_subdomains.py example.com -c --max-classify 50
 
 # Для классификации всех найденных поддоменов (может занять много времени)
-python scan_subdomains.py example.com -c --max-classify 0
+python3 scan_subdomains.py example.com -c --max-classify 0
 ```
 
 Если запустить скрипт без указания домена, он запросит его ввод интерактивно:
