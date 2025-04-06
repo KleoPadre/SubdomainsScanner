@@ -120,6 +120,80 @@ def find_subdomains(
 
         logger.info(f"Добавлено {len(fb_prefixes)} специальных префиксов для {domain}")
 
+    # Добавляем специальные префиксы для YouTube/Google
+    if (
+        "youtube.com" in domain
+        or "googlevideo.com" in domain
+        or "ggpht.com" in domain
+        or "ytimg.com" in domain
+    ):
+        logger.info(f"Добавляем специальные префиксы для {domain}...")
+        yt_prefixes = [
+            "yt3",
+            "i1",
+            "i2",
+            "i3",
+            "i4",
+            "i5",
+            "s0",
+            "s1",
+            "s2",
+            "s3",
+            "s4",
+            "s5",
+            "lh1",
+            "lh2",
+            "lh3",
+            "lh4",
+            "lh5",
+            "lh6",
+            "gm1",
+            "gm2",
+            "gm3",
+            "gm4",
+            "gm5",
+            "geo1",
+            "geo2",
+            "geo3",
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "beacons",
+            "redirector",
+            "manifest",
+            "v1",
+            "v2",
+            "v3",
+            "v4",
+            "v5",
+            "img",
+            "vid",
+            "stream",
+            "rr1",
+            "rr2",
+            "rr3",
+            "rr4",
+            "rr5",
+        ]
+
+        # Добавляем варианты с цифрами
+        for num in range(1, 21):
+            yt_prefixes.append(f"i{num}")
+            yt_prefixes.append(f"s{num}")
+            yt_prefixes.append(f"r{num}")
+            yt_prefixes.append(f"rr{num}")
+            yt_prefixes.append(f"v{num}")
+            yt_prefixes.append(f"lh{num}")
+
+        # Добавляем префиксы в словарь, если их там нет
+        for prefix in yt_prefixes:
+            if prefix not in wordlist:
+                wordlist.append(prefix)
+
+        logger.info(f"Добавлено {len(yt_prefixes)} специальных префиксов для {domain}")
+
     logger.info(
         f"Поиск поддоменов для {domain} с использованием {len(wordlist)} возможных имен..."
     )
