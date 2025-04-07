@@ -174,6 +174,85 @@ def search_certificate_transparency(domain):
         except Exception as e:
             logger.debug(f"Ошибка при поиске через Google CT API: {e}")
 
+    # Дополнительный метод для googlevideo.com: поиск через YouTube API CDN Endpoint
+    if "googlevideo.com" in domain:
+        try:
+            logger.info(f"Используем специальный источник YouTube CDN для {domain}...")
+            # Делаем запросы к известным YouTube API для получения информации о CDN
+            video_ids = ["dQw4w9WgXcQ", "9bZkp7q19f0", "jNQXAC9IVRw", "kJQP7kiw5Fk"]
+
+            for video_id in video_ids:
+                # Пробуем несколько API эндпоинтов для получения информации о CDN
+                urls = [
+                    f"https://www.youtube.com/get_video_info?video_id={video_id}",
+                    f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={video_id}&format=json",
+                    f"https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id={video_id}",
+                ]
+
+                for url in urls:
+                    try:
+                        response = requests.get(
+                            url,
+                            timeout=5,
+                            headers={
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+                            },
+                        )
+
+                        if response.status_code == 200:
+                            # Ищем URL CDN с помощью регулярных выражений
+                            content = response.text
+
+                            # Шаблон для поиска googlevideo.com URL
+                            googlevideo_pattern = r"https?://r[0-9]+\.sn-[a-z0-9-]+\.googlevideo\.com/[a-zA-Z0-9?=&%_/.-]+"
+                            cdn_urls = re.findall(googlevideo_pattern, content)
+
+                            # Извлекаем поддомены из найденных URL
+                            for cdn_url in cdn_urls:
+                                match = re.search(
+                                    r"//([^/]+)\.googlevideo\.com", cdn_url
+                                )
+                                if match:
+                                    subdomain = f"{match.group(1)}.googlevideo.com"
+                                    if (
+                                        subdomain.endswith(domain)
+                                        and subdomain != domain
+                                    ):
+                                        found_subdomains.add(subdomain)
+                    except Exception as e:
+                        logger.debug(f"Ошибка при запросе к YouTube API: {e}")
+
+            # Дополнительно пробуем использовать YouTube Embed API
+            try:
+                response = requests.get(
+                    "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                    timeout=5,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+                    },
+                )
+
+                if response.status_code == 200:
+                    content = response.text
+                    # Шаблон для поиска googlevideo.com URL
+                    googlevideo_pattern = r"https?://r[0-9]+\.sn-[a-z0-9-]+\.googlevideo\.com/[a-zA-Z0-9?=&%_/.-]+"
+                    cdn_urls = re.findall(googlevideo_pattern, content)
+
+                    for cdn_url in cdn_urls:
+                        match = re.search(r"//([^/]+)\.googlevideo\.com", cdn_url)
+                        if match:
+                            subdomain = f"{match.group(1)}.googlevideo.com"
+                            if subdomain.endswith(domain) and subdomain != domain:
+                                found_subdomains.add(subdomain)
+            except Exception as e:
+                logger.debug(f"Ошибка при запросе к YouTube Embed API: {e}")
+
+            logger.info(
+                f"Найдено {len(found_subdomains)} поддоменов через YouTube CDN API"
+            )
+        except Exception as e:
+            logger.debug(f"Ошибка при поиске через YouTube CDN API: {e}")
+
     # Проверяем найденные поддомены через DNS
     logger.info(f"Проверка {len(found_subdomains)} найденных поддоменов через DNS...")
 

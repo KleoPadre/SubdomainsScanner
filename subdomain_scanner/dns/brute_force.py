@@ -187,6 +187,90 @@ def find_subdomains(
             yt_prefixes.append(f"v{num}")
             yt_prefixes.append(f"lh{num}")
 
+        # Добавляем специфические префиксы googlevideo.com с шаблоном sn-*
+        if "googlevideo.com" in domain:
+            logger.info(f"Добавляем специальные префиксы для googlevideo.com...")
+
+            # Основные префиксы для r*.sn-*
+            for r_num in range(1, 6):
+                # Известные базовые шаблоны
+                sn_prefixes = [
+                    "sn-uph",
+                    "sn-uphx",
+                    "sn-uphxq",
+                    "sn-uphxqv",
+                    "sn-uphxqvu",
+                    "sn-uphxqvuj",
+                    "sn-uphxqvujvh",
+                    "sn-upho",
+                    "sn-uphho",
+                    "sn-u2ox",
+                    "sn-u2oxu",
+                    "sn-nx5e",
+                    "sn-nx57",
+                    "sn-nx5s",
+                    "sn-n5h7",
+                    "sn-aigl",
+                    "sn-4g5e",
+                    "sn-4g5l",
+                    "sn-vgqs",
+                    "sn-vgqse",
+                    "sn-vgqsr",
+                    "sn-q4fl",
+                    "sn-q4f7",
+                    "sn-p5qs",
+                    "sn-p5qlsnd",
+                    "sn-p5qlsns",
+                    "sn-q4fl6n",
+                    "sn-q4fl6nl",
+                    "sn-q4fl6ns",
+                ]
+
+                # Добавляем базовые шаблоны
+                for sn_prefix in sn_prefixes:
+                    yt_prefixes.append(f"r{r_num}.{sn_prefix}")
+
+                # Добавляем некоторые известные полные шаблоны
+                known_patterns = [
+                    "r2.sn-uphho-hqal",
+                    "r2.sn-uphvguxaxjvh-qpae",
+                    "r2.sn-uphxqvujvh-2xo6",
+                    "r2.sn-uphxqvujvh-2xol",
+                    "r2.sn-uphxqvujvh-30a6",
+                    "r2.sn-uphxqvujvh-30ae7",
+                    "r2.sn-uphxqvujvh-30ay",
+                    "r2.sn-uphxqvujvh-30az",
+                    "r1.sn-4g5lzne7",
+                    "r1.sn-4g5ednld",
+                    "r1.sn-4g5ednls",
+                    "r1.sn-5hne6nsy",
+                    "r2.sn-5hne6nsy",
+                    "r3.sn-5hne6nsy",
+                    "r4.sn-5hne6nsy",
+                    "r5.sn-5hne6nsy",
+                    "r6.sn-5hne6nsy",
+                    "r7.sn-5hne6nsy",
+                    "r8.sn-5hne6nsy",
+                    "r9.sn-5hne6nsy",
+                    "r10.sn-5hne6nsy",
+                    "r1.sn-25ge7ns7",
+                    "r2.sn-25ge7ns7",
+                    "r3.sn-25ge7ns7",
+                    "r4.sn-25ge7ns7",
+                    "r5.sn-25ge7ns7",
+                    "r6.sn-25ge7ns7",
+                    "r7.sn-25ge7ns7",
+                    "r8.sn-25ge7ns7",
+                ]
+
+                for pattern in known_patterns:
+                    if pattern not in yt_prefixes:
+                        yt_prefixes.append(pattern)
+
+            logger.info(
+                f"Добавлено {len(yt_prefixes)} специальных префиксов для googlevideo.com"
+            )
+
         # Добавляем префиксы в словарь, если их там нет
         for prefix in yt_prefixes:
             if prefix not in wordlist:
